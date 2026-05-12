@@ -5,6 +5,18 @@ import plotly.graph_objects as go
 import yfinance as yf
 import requests
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+try:
+    from streamlit_autorefresh import st_autorefresh
+    AUTOREFRESH_AVAILABLE = True
+except Exception:
+    AUTOREFRESH_AVAILABLE = False
+
+
+# =========================
+# 页面基础配置
+# =========================
 
 st.set_page_config(
     page_title="投资雷达",
@@ -12,85 +24,258 @@ st.set_page_config(
     layout="wide"
 )
 
+
 # =========================
-# 基础样式
+# 侧边栏：刷新与主题设置
 # =========================
 
-st.markdown(
-    """
-    <style>
-    .main-title {
-        font-size: 34px;
-        font-weight: 800;
-        margin-bottom: 0px;
+with st.sidebar:
+    st.markdown("## ⚙️ 仪表盘设置")
+
+    theme_mode = st.radio(
+        "显示模式",
+        ["🌞 明亮模式", "🌙 夜间模式"],
+        index=1
+    )
+
+    auto_refresh = st.toggle(
+        "自动刷新",
+        value=True
+    )
+
+    refresh_interval = st.selectbox(
+        "刷新频率",
+        ["30 秒", "1 分钟", "5 分钟", "15 分钟"],
+        index=1
+    )
+
+    interval_map = {
+        "30 秒": 30,
+        "1 分钟": 60,
+        "5 分钟": 300,
+        "15 分钟": 900
     }
-    .sub-title {
-        color: #666;
-        font-size: 14px;
-        margin-top: 0px;
-    }
-    .card {
-        background-color: #f7f8fa;
-        border-radius: 14px;
-        padding: 18px;
-        border: 1px solid #e6e8eb;
-        height: 150px;
-    }
-    .big-number {
-        font-size: 28px;
-        font-weight: 800;
-        margin-top: 8px;
-    }
-    .small-note {
-        font-size: 13px;
-        color: #666;
-        margin-top: 8px;
-    }
-    .signal-green {
-        color: #0a8f3c;
-        font-weight: 700;
-    }
-    .signal-yellow {
-        color: #b7791f;
-        font-weight: 700;
-    }
-    .signal-red {
-        color: #c53030;
-        font-weight: 700;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+
+    refresh_seconds = interval_map[refresh_interval]
+
+    if st.button("🔄 立即刷新数据"):
+        st.cache_data.clear()
+        st.rerun()
+
+    st.caption("市场价格可高频刷新；宏观数据通常为月度或季度更新。")
+
+    if not AUTOREFRESH_AVAILABLE:
+        st.warning("未检测到 streamlit-autorefresh，请在 requirements.txt 中加入 streamlit-autorefresh。")
+
+
+if auto_refresh and AUTOREFRESH_AVAILABLE:
+    st_autorefresh(
+        interval=refresh_seconds * 1000,
+        key="investment_radar_auto_refresh"
+    )
+
+
+# =========================
+# 主题样式：明亮模式 / 夜间模式
+# =========================
+
+if theme_mode == "🌙 夜间模式":
+    st.markdown(
+        """
+        <style>
+        .stApp {
+            background-color: #0e1117;
+            color: #e6edf3;
+        }
+
+        section[data-testid="stSidebar"] {
+            background-color: #111827;
+            border-right: 1px solid #2d3748;
+        }
+
+        .main-title {
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 0px;
+            color: #f8fafc;
+        }
+
+        .sub-title {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-top: 0px;
+        }
+
+        .card {
+            background-color: #161b22;
+            border-radius: 14px;
+            padding: 18px;
+            border: 1px solid #30363d;
+            height: 160px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+        }
+
+        .big-number {
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 8px;
+            color: #f8fafc;
+        }
+
+        .small-note {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        div[data-testid="stMetric"] {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            padding: 14px;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+        }
+
+        div[data-testid="stMetricLabel"] {
+            color: #94a3b8;
+        }
+
+        div[data-testid="stMetricValue"] {
+            color: #f8fafc;
+        }
+
+        div[data-testid="stMetricDelta"] {
+            color: #22c55e;
+        }
+
+        h1, h2, h3, h4 {
+            color: #f8fafc;
+        }
+
+        hr {
+            border-color: #30363d;
+        }
+
+        .stDataFrame {
+            background-color: #161b22;
+        }
+
+        p, li, span, div {
+            color: inherit;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+else:
+    st.markdown(
+        """
+        <style>
+        .stApp {
+            background-color: #ffffff;
+            color: #111827;
+        }
+
+        section[data-testid="stSidebar"] {
+            background-color: #f8fafc;
+            border-right: 1px solid #e5e7eb;
+        }
+
+        .main-title {
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 0px;
+            color: #111827;
+        }
+
+        .sub-title {
+            color: #666;
+            font-size: 14px;
+            margin-top: 0px;
+        }
+
+        .card {
+            background-color: #f7f8fa;
+            border-radius: 14px;
+            padding: 18px;
+            border: 1px solid #e6e8eb;
+            height: 160px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+
+        .big-number {
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 8px;
+            color: #111827;
+        }
+
+        .small-note {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        div[data-testid="stMetric"] {
+            background-color: #f8fafc;
+            border: 1px solid #e5e7eb;
+            padding: 14px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # =========================
 # 工具函数
 # =========================
 
+def now_cn():
+    return datetime.now(ZoneInfo("Asia/Shanghai"))
+
+
 def safe_float(x, default=np.nan):
     try:
+        if isinstance(x, pd.Series):
+            x = x.iloc[0]
         return float(x)
     except Exception:
         return default
 
 
-def pct_change(current, previous):
-    try:
-        if previous == 0 or pd.isna(previous):
-            return np.nan
-        return (current - previous) / previous * 100
-    except Exception:
-        return np.nan
+def flatten_yfinance_columns(df):
+    if df is None or df.empty:
+        return df
+
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = [
+            col[0] if isinstance(col, tuple) else col
+            for col in df.columns
+        ]
+
+    return df
 
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=60)
 def get_yfinance_series(ticker, period="6mo"):
     try:
-        data = yf.download(ticker, period=period, progress=False, auto_adjust=False)
+        data = yf.download(
+            ticker,
+            period=period,
+            progress=False,
+            auto_adjust=False,
+            threads=False
+        )
+
         if data is None or data.empty:
             return None
+
+        data = flatten_yfinance_columns(data)
         data = data.reset_index()
+
         return data
     except Exception:
         return None
@@ -98,15 +283,20 @@ def get_yfinance_series(ticker, period="6mo"):
 
 def latest_close(ticker, period="6mo", divisor=1):
     data = get_yfinance_series(ticker, period)
+
     if data is None or data.empty:
         return np.nan, np.nan, None
 
-    close_col = "Close"
-    if close_col not in data.columns:
+    if "Close" not in data.columns:
         return np.nan, np.nan, data
 
-    current = safe_float(data[close_col].iloc[-1]) / divisor
-    previous = safe_float(data[close_col].iloc[-2]) / divisor if len(data) >= 2 else current
+    current = safe_float(data["Close"].iloc[-1]) / divisor
+
+    if len(data) >= 2:
+        previous = safe_float(data["Close"].iloc[-2]) / divisor
+    else:
+        previous = current
+
     return current, previous, data
 
 
@@ -126,10 +316,17 @@ def fred_series(series_id):
 
 def latest_fred(series_id):
     df = fred_series(series_id)
+
     if df is None or df.empty:
         return np.nan, np.nan, None
+
     current = safe_float(df["value"].iloc[-1])
-    previous = safe_float(df["value"].iloc[-2]) if len(df) >= 2 else current
+
+    if len(df) >= 2:
+        previous = safe_float(df["value"].iloc[-2])
+    else:
+        previous = current
+
     return current, previous, df
 
 
@@ -137,7 +334,7 @@ def latest_fred(series_id):
 def get_china_macro_best_effort():
     """
     中国宏观数据尽量用 akshare 抓取。
-    如果 akshare 接口失败，则返回默认值，保证网页不会崩。
+    如果接口失败，则返回默认值，保证网页不崩。
     """
     result = {
         "社融存量同比": {"value": 9.0, "prev": 8.9, "source": "fallback"},
@@ -150,7 +347,6 @@ def get_china_macro_best_effort():
     try:
         import akshare as ak
 
-        # 货币供应 M1/M2
         try:
             money = ak.macro_china_money_supply()
             if money is not None and not money.empty:
@@ -158,13 +354,16 @@ def get_china_macro_best_effort():
                 prev = money.iloc[-2] if len(money) >= 2 else last
 
                 for col in money.columns:
-                    if "M1" in str(col) and "同比" in str(col):
+                    col_text = str(col)
+
+                    if "M1" in col_text and ("同比" in col_text or "增长" in col_text):
                         result["M1同比"] = {
                             "value": safe_float(last[col], result["M1同比"]["value"]),
                             "prev": safe_float(prev[col], result["M1同比"]["prev"]),
                             "source": "akshare"
                         }
-                    if "M2" in str(col) and "同比" in str(col):
+
+                    if "M2" in col_text and ("同比" in col_text or "增长" in col_text):
                         result["M2同比"] = {
                             "value": safe_float(last[col], result["M2同比"]["value"]),
                             "prev": safe_float(prev[col], result["M2同比"]["prev"]),
@@ -173,14 +372,15 @@ def get_china_macro_best_effort():
         except Exception:
             pass
 
-        # LPR
         try:
             lpr = ak.macro_china_lpr()
             if lpr is not None and not lpr.empty:
                 last = lpr.iloc[-1]
                 prev = lpr.iloc[-2] if len(lpr) >= 2 else last
+
                 for col in lpr.columns:
-                    if "5" in str(col) and ("年" in str(col) or "Y" in str(col)):
+                    col_text = str(col)
+                    if ("5" in col_text and "LPR" in col_text) or ("5年" in col_text):
                         result["LPR_5Y"] = {
                             "value": safe_float(last[col], result["LPR_5Y"]["value"]),
                             "prev": safe_float(prev[col], result["LPR_5Y"]["prev"]),
@@ -196,7 +396,7 @@ def get_china_macro_best_effort():
     return result
 
 
-@st.cache_data(ttl=900)
+@st.cache_data(ttl=60)
 def get_market_data():
     """
     市场价格数据。
@@ -212,25 +412,62 @@ def get_market_data():
 
     hsi, hsi_prev, hsi_hist = latest_close("^HSI")
     sh, sh_prev, sh_hist = latest_close("000001.SS")
-    us10y_raw, us10y_prev_raw, us10y_hist = latest_close("^TNX", divisor=10)
+    us10y, us10y_prev, us10y_hist = latest_close("^TNX", divisor=10)
     dxy, dxy_prev, dxy_hist = latest_close("DX-Y.NYB")
     gold_usd, gold_usd_prev, gold_hist = latest_close("GC=F")
     usdcny, usdcny_prev, usdcny_hist = latest_close("CNY=X")
 
-    # 人民币计价黄金估算：美元/盎司 × 美元人民币 / 31.1035
     if not pd.isna(gold_usd) and not pd.isna(usdcny):
         gold_cny_gram = gold_usd * usdcny / 31.1035
-        gold_cny_gram_prev = gold_usd_prev * usdcny_prev / 31.1035
     else:
         gold_cny_gram = 752
+
+    if not pd.isna(gold_usd_prev) and not pd.isna(usdcny_prev):
+        gold_cny_gram_prev = gold_usd_prev * usdcny_prev / 31.1035
+    else:
         gold_cny_gram_prev = 749
 
-    data["恒生指数"] = {"value": hsi if not pd.isna(hsi) else 26200, "prev": hsi_prev if not pd.isna(hsi_prev) else 26100, "hist": hsi_hist}
-    data["上证指数"] = {"value": sh if not pd.isna(sh) else 3450, "prev": sh_prev if not pd.isna(sh_prev) else 3440, "hist": sh_hist}
-    data["10Y美债"] = {"value": us10y_raw if not pd.isna(us10y_raw) else 4.43, "prev": us10y_prev_raw if not pd.isna(us10y_prev_raw) else 4.38, "hist": us10y_hist}
-    data["美元指数"] = {"value": dxy if not pd.isna(dxy) else 99.2, "prev": dxy_prev if not pd.isna(dxy_prev) else 99.0, "hist": dxy_hist}
-    data["黄金_人民币每克"] = {"value": gold_cny_gram, "prev": gold_cny_gram_prev, "hist": gold_hist}
-    data["美元人民币"] = {"value": usdcny if not pd.isna(usdcny) else 7.05, "prev": usdcny_prev if not pd.isna(usdcny_prev) else 7.04, "hist": usdcny_hist}
+    data["恒生指数"] = {
+        "value": hsi if not pd.isna(hsi) else 26200,
+        "prev": hsi_prev if not pd.isna(hsi_prev) else 26100,
+        "hist": hsi_hist,
+        "source": "yfinance"
+    }
+
+    data["上证指数"] = {
+        "value": sh if not pd.isna(sh) else 3450,
+        "prev": sh_prev if not pd.isna(sh_prev) else 3440,
+        "hist": sh_hist,
+        "source": "yfinance"
+    }
+
+    data["10Y美债"] = {
+        "value": us10y if not pd.isna(us10y) else 4.43,
+        "prev": us10y_prev if not pd.isna(us10y_prev) else 4.38,
+        "hist": us10y_hist,
+        "source": "yfinance"
+    }
+
+    data["美元指数"] = {
+        "value": dxy if not pd.isna(dxy) else 99.2,
+        "prev": dxy_prev if not pd.isna(dxy_prev) else 99.0,
+        "hist": dxy_hist,
+        "source": "yfinance"
+    }
+
+    data["黄金_人民币每克"] = {
+        "value": gold_cny_gram,
+        "prev": gold_cny_gram_prev,
+        "hist": gold_hist,
+        "source": "yfinance estimate"
+    }
+
+    data["美元人民币"] = {
+        "value": usdcny if not pd.isna(usdcny) else 7.05,
+        "prev": usdcny_prev if not pd.isna(usdcny_prev) else 7.04,
+        "hist": usdcny_hist,
+        "source": "yfinance"
+    }
 
     return data
 
@@ -239,35 +476,40 @@ def get_market_data():
 def get_us_macro():
     result = {}
 
-    # 美国 ISM PMI: FRED NAPM
     pmi, pmi_prev, pmi_hist = latest_fred("NAPM")
     result["ISM_PMI"] = {
         "value": pmi if not pd.isna(pmi) else 48.5,
         "prev": pmi_prev if not pd.isna(pmi_prev) else 48.8,
-        "hist": pmi_hist
+        "hist": pmi_hist,
+        "source": "FRED NAPM"
     }
 
-    # CPI YoY: CPIAUCSL
     cpi_df = fred_series("CPIAUCSL")
-    if cpi_df is not None and len(cpi_df) >= 13:
+    if cpi_df is not None and len(cpi_df) >= 14:
         cpi_now = cpi_df["value"].iloc[-1]
         cpi_12m = cpi_df["value"].iloc[-13]
         cpi_prev = cpi_df["value"].iloc[-2]
         cpi_prev_12m = cpi_df["value"].iloc[-14]
+
         cpi_yoy = (cpi_now / cpi_12m - 1) * 100
         cpi_yoy_prev = (cpi_prev / cpi_prev_12m - 1) * 100
     else:
         cpi_yoy = 2.6
         cpi_yoy_prev = 2.6
 
-    result["CPI同比"] = {"value": cpi_yoy, "prev": cpi_yoy_prev, "hist": cpi_df}
+    result["CPI同比"] = {
+        "value": cpi_yoy,
+        "prev": cpi_yoy_prev,
+        "hist": cpi_df,
+        "source": "FRED CPIAUCSL"
+    }
 
-    # 联邦基金利率: FEDFUNDS
     fed, fed_prev, fed_hist = latest_fred("FEDFUNDS")
     result["联邦基金利率"] = {
         "value": fed if not pd.isna(fed) else 3.75,
         "prev": fed_prev if not pd.isna(fed_prev) else 3.75,
-        "hist": fed_hist
+        "hist": fed_hist,
+        "source": "FRED FEDFUNDS"
     }
 
     return result
@@ -324,11 +566,11 @@ def judge_hk_season(us_season, china_season):
         return "过渡期", "中美周期错位", "结构性机会强于指数机会，分批配置", "yellow"
 
 
-def get_long_cycle_state(market):
+def get_long_cycle_state(market, us_macro):
     debt_gdp = 100.2
     interest_gdp = 3.2
     us10y = market["10Y美债"]["value"]
-    cpi = 2.6
+    cpi = us_macro["CPI同比"]["value"]
     real_rate = us10y - cpi
 
     if debt_gdp < 80:
@@ -370,7 +612,7 @@ def render_card(title, main, desc, note, level="yellow"):
     st.markdown(
         f"""
         <div class="card">
-            <div style="font-size:14px;color:#666;">{title}</div>
+            <div style="font-size:14px;color:#94a3b8;">{title}</div>
             <div class="big-number">{badge} {main}</div>
             <div style="font-size:14px;margin-top:4px;">{desc}</div>
             <div class="small-note">{note}</div>
@@ -400,7 +642,14 @@ def make_line_chart(df, title, y_col=None):
                     return
                 y_col = numeric_cols[-1]
 
-        x_col = "Date" if "Date" in df.columns else "date" if "date" in df.columns else df.columns[0]
+        if "Date" in df.columns:
+            x_col = "Date"
+        elif "Datetime" in df.columns:
+            x_col = "Datetime"
+        elif "date" in df.columns:
+            x_col = "date"
+        else:
+            x_col = df.columns[0]
 
         fig.add_trace(
             go.Scatter(
@@ -411,13 +660,17 @@ def make_line_chart(df, title, y_col=None):
                 line=dict(width=2)
             )
         )
+
         fig.update_layout(
             title=title,
             height=360,
             margin=dict(l=20, r=20, t=50, b=20),
-            hovermode="x unified"
+            hovermode="x unified",
+            template="plotly_dark" if theme_mode == "🌙 夜间模式" else "plotly_white"
         )
+
         st.plotly_chart(fig, use_container_width=True)
+
     except Exception as e:
         st.warning(f"图表生成失败：{e}")
 
@@ -466,20 +719,31 @@ with st.spinner("正在获取实时数据，首次加载可能需要 20-60 秒..
 us_season = judge_us_season(us_macro)
 china_season = judge_china_season(china_macro)
 hk_season = judge_hk_season(us_season, china_season)
-long_cycle = get_long_cycle_state(market)
+long_cycle = get_long_cycle_state(market, us_macro)
 alerts = generate_alerts(china_macro, us_macro, market)
+
 
 # =========================
 # 顶部标题
 # =========================
 
 st.markdown('<div class="main-title">📊 投资雷达</div>', unsafe_allow_html=True)
+
 st.markdown(
-    f'<div class="sub-title">短周期 + 中周期 + 长周期一体化仪表盘｜更新时间：{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</div>',
+    f"""
+    <div class="sub-title">
+    短周期 + 中周期 + 长周期一体化仪表盘｜
+    更新时间：{now_cn().strftime("%Y-%m-%d %H:%M:%S")}｜
+    自动刷新：{"开启" if auto_refresh else "关闭"}｜
+    刷新频率：{refresh_interval}｜
+    主题：{theme_mode}
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
 st.divider()
+
 
 # =========================
 # 页面标签
@@ -489,6 +753,7 @@ tab_home, tab_short, tab_long, tab_allocation, tab_review = st.tabs(
     ["首页总览", "短周期仪表盘", "长周期仪表盘", "资产配置建议", "历史复盘"]
 )
 
+
 # =========================
 # 首页
 # =========================
@@ -497,6 +762,7 @@ with tab_home:
     st.subheader("今日核心判断")
 
     c1, c2, c3 = st.columns(3)
+
     with c1:
         render_card(
             "美国短周期",
@@ -546,6 +812,7 @@ with tab_home:
     ]
 
     cols = [m1, m2, m3, m4, m5, m6]
+
     for col, (label, key, suffix) in zip(cols, market_items):
         current = market[key]["value"]
         previous = market[key]["prev"]
@@ -580,6 +847,7 @@ with tab_home:
         """
     )
 
+
 # =========================
 # 短周期仪表盘
 # =========================
@@ -613,6 +881,7 @@ with tab_short:
     st.subheader("美国短周期指标")
 
     u1, u2, u3, u4 = st.columns(4)
+
     us_items = [
         ("ISM PMI", "ISM_PMI", ""),
         ("CPI同比", "CPI同比", "%"),
@@ -644,9 +913,13 @@ with tab_short:
     )
 
     if chart_choice == "人民币黄金":
-        make_line_chart(market["黄金_人民币每克"]["hist"], "COMEX 黄金走势（人民币每克为首页估算值，走势图为美元黄金期货）")
+        make_line_chart(
+            market["黄金_人民币每克"]["hist"],
+            "COMEX 黄金走势（人民币每克为首页估算值，走势图为美元黄金期货）"
+        )
     else:
         make_line_chart(market[chart_choice]["hist"], chart_choice)
+
 
 # =========================
 # 长周期仪表盘
@@ -689,7 +962,8 @@ with tab_long:
     fig.update_layout(
         polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
         height=520,
-        showlegend=True
+        showlegend=True,
+        template="plotly_dark" if theme_mode == "🌙 夜间模式" else "plotly_white"
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -708,6 +982,7 @@ with tab_long:
         "长周期核心不是预测明年涨跌，而是决定战略底仓。"
         "当前最重要的长期配置原则是：货币多元化、黄金底仓、优质股权、减少对单一长期债权资产的依赖。"
     )
+
 
 # =========================
 # 资产配置建议
@@ -748,7 +1023,10 @@ with tab_allocation:
                 )
             ]
         )
-        fig.update_layout(height=460)
+        fig.update_layout(
+            height=460,
+            template="plotly_dark" if theme_mode == "🌙 夜间模式" else "plotly_white"
+        )
         st.plotly_chart(fig, use_container_width=True)
 
     with right:
@@ -794,6 +1072,7 @@ with tab_allocation:
     st.warning(
         "这不是自动交易信号，而是决策辅助。真正下单前仍需要结合估值、仓位、个人现金流和风险承受能力。"
     )
+
 
 # =========================
 # 历史复盘
@@ -841,6 +1120,7 @@ with tab_review:
 
     if st.button("保存本次复盘记录"):
         st.success("当前简化版暂未接数据库。你可以先复制保存到本地，后续版本可接入 Supabase 或 SQLite。")
+
 
 st.divider()
 st.caption("免责声明：本网页仅用于个人研究和框架训练，不构成任何投资建议。投资有风险，决策需谨慎。")
