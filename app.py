@@ -27,7 +27,7 @@ st.set_page_config(
 
 
 # ============================================================
-# 工具函数
+# 基础工具函数
 # ============================================================
 
 def now_cn():
@@ -78,13 +78,6 @@ def level_class(level):
     if level == "blue":
         return "info"
     return "neutral"
-
-
-def fmt_num(x, digits=2):
-    try:
-        return f"{float(x):.{digits}f}"
-    except Exception:
-        return str(x)
 
 
 def delta_text(current, previous, suffix=""):
@@ -169,30 +162,45 @@ if auto_refresh and AUTOREFRESH_AVAILABLE:
 # ============================================================
 
 if theme_mode == "🌙 夜间模式":
+    PLOT_TEMPLATE = "plotly_dark"
+    FONT_COLOR = "#f8fafc"
+    PAGE_BG = "#070b12"
+
     st.markdown(
         """
         <style>
         :root {
-            --bg: #0b0f17;
+            --bg: #070b12;
+            --sidebar: #0f172a;
             --panel: #111827;
-            --panel2: #161b22;
-            --border: #30363d;
-            --text: #e6edf3;
+            --panel2: #172033;
+            --panel3: #1e293b;
+            --border: #2f3b52;
+            --text: #f8fafc;
             --muted: #94a3b8;
+            --muted2: #64748b;
             --good: #22c55e;
             --warn: #f59e0b;
             --bad: #ef4444;
             --info: #38bdf8;
-            --neutral: #cbd5e1;
+            --purple: #8b5cf6;
+            --cyan: #06b6d4;
         }
 
         .stApp {
-            background: var(--bg);
+            background: radial-gradient(circle at top left, #111827 0%, #070b12 42%, #05070d 100%);
             color: var(--text);
         }
 
+        .block-container {
+            padding-top: 3.1rem;
+            padding-left: 4rem;
+            padding-right: 4rem;
+            max-width: 1280px;
+        }
+
         section[data-testid="stSidebar"] {
-            background: #0f172a;
+            background: linear-gradient(180deg, #0f172a 0%, #0b1220 100%);
             border-right: 1px solid var(--border);
         }
 
@@ -202,6 +210,7 @@ if theme_mode == "🌙 夜间模式":
 
         h1, h2, h3, h4, h5, h6 {
             color: var(--text) !important;
+            letter-spacing: -0.03em;
         }
 
         p, li, span, div {
@@ -213,89 +222,97 @@ if theme_mode == "🌙 夜间模式":
         }
 
         .main-header {
-            background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 24px 28px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            background: linear-gradient(135deg, rgba(30,41,59,0.96) 0%, rgba(15,23,42,0.96) 100%);
+            border: 1px solid rgba(148,163,184,0.22);
+            border-radius: 24px;
+            padding: 30px 34px;
+            margin-bottom: 28px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.35);
         }
 
         .main-title {
-            font-size: 34px;
-            font-weight: 850;
+            font-size: 38px;
+            font-weight: 900;
             color: #f8fafc;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+            letter-spacing: -0.04em;
         }
 
         .main-subtitle {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--muted);
+            line-height: 1.6;
         }
 
         .kpi-card {
-            background: var(--panel2);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 18px 18px;
-            min-height: 145px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.22);
+            background: linear-gradient(180deg, rgba(30,41,59,0.95), rgba(15,23,42,0.95));
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 22px;
+            padding: 22px;
+            min-height: 168px;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.28);
         }
 
         .kpi-title {
             font-size: 13px;
             color: var(--muted);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            font-weight: 650;
         }
 
         .kpi-value {
-            font-size: 28px;
-            font-weight: 850;
+            font-size: 30px;
+            font-weight: 900;
             color: #f8fafc;
-            line-height: 1.25;
+            line-height: 1.2;
         }
 
         .kpi-desc {
             font-size: 14px;
             color: #cbd5e1;
-            margin-top: 6px;
+            margin-top: 8px;
+            line-height: 1.55;
         }
 
         .kpi-note {
             font-size: 12px;
             color: var(--muted);
-            margin-top: 8px;
+            margin-top: 10px;
+            line-height: 1.45;
         }
 
         .section-card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 18px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+            background: rgba(15,23,42,0.86);
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 22px;
+            padding: 24px;
+            margin-bottom: 22px;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.22);
+            line-height: 1.75;
         }
 
-        .good { color: var(--good) !important; font-weight: 800; }
-        .warn { color: var(--warn) !important; font-weight: 800; }
-        .bad { color: var(--bad) !important; font-weight: 800; }
-        .info { color: var(--info) !important; font-weight: 800; }
-        .neutral { color: var(--neutral) !important; font-weight: 800; }
+        .good { color: var(--good) !important; font-weight: 850; }
+        .warn { color: var(--warn) !important; font-weight: 850; }
+        .bad { color: var(--bad) !important; font-weight: 850; }
+        .info { color: var(--info) !important; font-weight: 850; }
+        .neutral { color: #cbd5e1 !important; font-weight: 850; }
 
         div[data-testid="stMetric"] {
-            background: var(--panel2);
-            border: 1px solid var(--border);
-            padding: 16px;
-            border-radius: 14px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+            background: linear-gradient(180deg, rgba(30,41,59,0.92), rgba(15,23,42,0.92));
+            border: 1px solid rgba(148,163,184,0.18);
+            padding: 18px;
+            border-radius: 18px;
+            box-shadow: 0 14px 35px rgba(0,0,0,0.2);
         }
 
         div[data-testid="stMetricLabel"] {
             color: var(--muted);
+            font-weight: 650;
         }
 
         div[data-testid="stMetricValue"] {
             color: #f8fafc;
+            font-weight: 850;
         }
 
         div[data-testid="stMetricDelta"] {
@@ -305,46 +322,50 @@ if theme_mode == "🌙 夜间模式":
         .custom-table {
             width: 100%;
             border-collapse: collapse;
-            border-radius: 14px;
+            border-radius: 18px;
             overflow: hidden;
-            margin-top: 10px;
-            margin-bottom: 20px;
-            background: var(--panel2);
-            border: 1px solid var(--border);
+            margin-top: 12px;
+            margin-bottom: 24px;
+            background: rgba(15,23,42,0.92);
+            border: 1px solid rgba(148,163,184,0.18);
+            box-shadow: 0 14px 35px rgba(0,0,0,0.18);
         }
 
         .custom-table th {
-            background: #1f2937;
+            background: rgba(30,41,59,0.96);
             color: #f8fafc;
-            font-weight: 750;
-            padding: 12px 14px;
+            font-weight: 800;
+            padding: 14px 16px;
             text-align: left;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid rgba(148,163,184,0.18);
             font-size: 14px;
         }
 
         .custom-table td {
             color: #dbeafe;
-            padding: 12px 14px;
-            border-bottom: 1px solid #243041;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(148,163,184,0.12);
             font-size: 14px;
             vertical-align: top;
+            line-height: 1.55;
         }
 
         .custom-table tr:nth-child(even) {
-            background: #111827;
+            background: rgba(17,24,39,0.72);
         }
 
         .custom-table tr:hover {
-            background: #1e293b;
+            background: rgba(30,41,59,0.92);
         }
 
         .alert-box {
-            border-radius: 14px;
-            padding: 14px 16px;
-            margin: 10px 0;
-            border: 1px solid var(--border);
-            background: var(--panel2);
+            border-radius: 18px;
+            padding: 16px 18px;
+            margin: 12px 0;
+            background: rgba(15,23,42,0.92);
+            border: 1px solid rgba(148,163,184,0.16);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+            line-height: 1.55;
         }
 
         .alert-good {
@@ -360,45 +381,127 @@ if theme_mode == "🌙 夜间模式":
         }
 
         .principle-box {
-            background: var(--panel2);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 16px;
+            background: linear-gradient(180deg, rgba(30,41,59,0.92), rgba(15,23,42,0.92));
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 22px;
+            padding: 22px;
+            margin-bottom: 18px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.2);
         }
 
         .principle-title {
-            font-size: 20px;
+            font-size: 21px;
+            font-weight: 900;
+            color: #f8fafc;
+            margin-bottom: 12px;
+        }
+
+        .principle-line {
+            color: #cbd5e1;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .principle-label {
+            color: var(--muted);
+            font-weight: 850;
+        }
+
+        .allocation-card {
+            background: linear-gradient(180deg, rgba(30,41,59,0.94), rgba(15,23,42,0.94));
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 22px;
+            padding: 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.22);
+        }
+
+        .allocation-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
             font-weight: 850;
             color: #f8fafc;
             margin-bottom: 10px;
         }
 
-        .principle-line {
-            color: #cbd5e1;
-            margin-bottom: 8px;
-            font-size: 14px;
+        .allocation-role {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 12px;
+            line-height: 1.45;
         }
 
-        .principle-label {
-            color: var(--muted);
-            font-weight: 800;
+        .bar-bg {
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(51,65,85,0.9);
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+        }
+
+        .action-card {
+            background: linear-gradient(180deg, rgba(30,41,59,0.94), rgba(15,23,42,0.94));
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 22px;
+            padding: 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.22);
+        }
+
+        .action-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: #f8fafc;
+            margin-bottom: 10px;
+        }
+
+        .action-text {
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.65;
         }
 
         div[data-testid="stAlert"] {
-            background: var(--panel2);
+            background: rgba(15,23,42,0.9);
             color: var(--text);
-            border: 1px solid var(--border);
+            border: 1px solid rgba(148,163,184,0.18);
+            border-radius: 16px;
         }
 
         .stTextArea textarea {
-            background: var(--panel2) !important;
+            background: rgba(15,23,42,0.92) !important;
             color: var(--text) !important;
-            border: 1px solid var(--border) !important;
+            border: 1px solid rgba(148,163,184,0.2) !important;
+            border-radius: 16px !important;
         }
 
-        .stSelectbox div, .stRadio div {
-            color: var(--text);
+        .stButton button {
+            background: linear-gradient(90deg, #2563eb, #7c3aed) !important;
+            color: white !important;
+            border: 0 !important;
+            border-radius: 14px !important;
+            font-weight: 800 !important;
+            min-height: 42px !important;
+        }
+
+        .stSelectbox div[data-baseweb="select"] > div {
+            background: rgba(15,23,42,0.92) !important;
+            border: 1px solid rgba(148,163,184,0.2) !important;
+            color: #f8fafc !important;
+            border-radius: 14px !important;
+        }
+
+        .stRadio label {
+            background: transparent !important;
         }
 
         </style>
@@ -406,29 +509,38 @@ if theme_mode == "🌙 夜间模式":
         unsafe_allow_html=True
     )
 
-    PLOT_TEMPLATE = "plotly_dark"
-
 else:
+    PLOT_TEMPLATE = "plotly_white"
+    FONT_COLOR = "#111827"
+    PAGE_BG = "#ffffff"
+
     st.markdown(
         """
         <style>
         :root {
             --bg: #ffffff;
-            --panel: #f8fafc;
-            --panel2: #ffffff;
-            --border: #e5e7eb;
+            --sidebar: #f8fafc;
+            --panel: #ffffff;
+            --panel2: #f8fafc;
+            --border: #e2e8f0;
             --text: #111827;
             --muted: #64748b;
             --good: #0a8f3c;
             --warn: #b7791f;
             --bad: #c53030;
             --info: #0284c7;
-            --neutral: #334155;
         }
 
         .stApp {
-            background: var(--bg);
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             color: var(--text);
+        }
+
+        .block-container {
+            padding-top: 3.1rem;
+            padding-left: 4rem;
+            padding-right: 4rem;
+            max-width: 1280px;
         }
 
         section[data-testid="stSidebar"] {
@@ -437,99 +549,105 @@ else:
         }
 
         .main-header {
-            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
             border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 24px 28px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 20px rgba(15,23,42,0.06);
+            border-radius: 24px;
+            padding: 30px 34px;
+            margin-bottom: 28px;
+            box-shadow: 0 16px 40px rgba(15,23,42,0.06);
         }
 
         .main-title {
-            font-size: 34px;
-            font-weight: 850;
+            font-size: 38px;
+            font-weight: 900;
             color: #111827;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
+            letter-spacing: -0.04em;
         }
 
         .main-subtitle {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--muted);
+            line-height: 1.6;
         }
 
         .kpi-card {
-            background: var(--panel2);
+            background: #ffffff;
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 18px 18px;
-            min-height: 145px;
-            box-shadow: 0 6px 18px rgba(15,23,42,0.05);
+            border-radius: 22px;
+            padding: 22px;
+            min-height: 168px;
+            box-shadow: 0 14px 35px rgba(15,23,42,0.06);
         }
 
         .kpi-title {
             font-size: 13px;
             color: var(--muted);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            font-weight: 650;
         }
 
         .kpi-value {
-            font-size: 28px;
-            font-weight: 850;
+            font-size: 30px;
+            font-weight: 900;
             color: #111827;
-            line-height: 1.25;
+            line-height: 1.2;
         }
 
         .kpi-desc {
             font-size: 14px;
             color: #334155;
-            margin-top: 6px;
+            margin-top: 8px;
+            line-height: 1.55;
         }
 
         .kpi-note {
             font-size: 12px;
             color: var(--muted);
-            margin-top: 8px;
+            margin-top: 10px;
+            line-height: 1.45;
         }
 
         .section-card {
-            background: var(--panel);
+            background: #ffffff;
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 18px;
-            box-shadow: 0 6px 18px rgba(15,23,42,0.04);
+            border-radius: 22px;
+            padding: 24px;
+            margin-bottom: 22px;
+            box-shadow: 0 14px 35px rgba(15,23,42,0.06);
+            line-height: 1.75;
         }
 
-        .good { color: var(--good) !important; font-weight: 800; }
-        .warn { color: var(--warn) !important; font-weight: 800; }
-        .bad { color: var(--bad) !important; font-weight: 800; }
-        .info { color: var(--info) !important; font-weight: 800; }
-        .neutral { color: var(--neutral) !important; font-weight: 800; }
+        .good { color: var(--good) !important; font-weight: 850; }
+        .warn { color: var(--warn) !important; font-weight: 850; }
+        .bad { color: var(--bad) !important; font-weight: 850; }
+        .info { color: var(--info) !important; font-weight: 850; }
 
         div[data-testid="stMetric"] {
             background: #ffffff;
             border: 1px solid var(--border);
-            padding: 16px;
-            border-radius: 14px;
-            box-shadow: 0 6px 16px rgba(15,23,42,0.04);
+            padding: 18px;
+            border-radius: 18px;
+            box-shadow: 0 14px 35px rgba(15,23,42,0.05);
         }
 
         .custom-table {
             width: 100%;
             border-collapse: collapse;
-            border-radius: 14px;
+            border-radius: 18px;
             overflow: hidden;
-            margin-top: 10px;
-            margin-bottom: 20px;
+            margin-top: 12px;
+            margin-bottom: 24px;
             background: #ffffff;
             border: 1px solid var(--border);
+            box-shadow: 0 14px 35px rgba(15,23,42,0.05);
         }
 
         .custom-table th {
             background: #f1f5f9;
             color: #111827;
-            font-weight: 750;
-            padding: 12px 14px;
+            font-weight: 800;
+            padding: 14px 16px;
             text-align: left;
             border-bottom: 1px solid var(--border);
             font-size: 14px;
@@ -537,10 +655,11 @@ else:
 
         .custom-table td {
             color: #1e293b;
-            padding: 12px 14px;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
             font-size: 14px;
             vertical-align: top;
+            line-height: 1.55;
         }
 
         .custom-table tr:nth-child(even) {
@@ -552,57 +671,81 @@ else:
         }
 
         .alert-box {
-            border-radius: 14px;
-            padding: 14px 16px;
-            margin: 10px 0;
-            border: 1px solid var(--border);
-            background: #ffffff;
-        }
-
-        .alert-good {
-            border-left: 5px solid var(--good);
-        }
-
-        .alert-warn {
-            border-left: 5px solid var(--warn);
-        }
-
-        .alert-bad {
-            border-left: 5px solid var(--bad);
-        }
-
-        .principle-box {
+            border-radius: 18px;
+            padding: 16px 18px;
+            margin: 12px 0;
             background: #ffffff;
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 18px;
+            box-shadow: 0 12px 30px rgba(15,23,42,0.05);
+            line-height: 1.55;
+        }
+
+        .alert-good { border-left: 5px solid var(--good); }
+        .alert-warn { border-left: 5px solid var(--warn); }
+        .alert-bad { border-left: 5px solid var(--bad); }
+
+        .principle-box, .allocation-card, .action-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 22px;
             margin-bottom: 16px;
+            box-shadow: 0 14px 35px rgba(15,23,42,0.05);
         }
 
-        .principle-title {
+        .principle-title, .action-title {
             font-size: 20px;
+            font-weight: 900;
+            color: #111827;
+            margin-bottom: 12px;
+        }
+
+        .principle-line, .action-text {
+            color: #334155;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .principle-label {
+            color: var(--muted);
+            font-weight: 850;
+        }
+
+        .allocation-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
             font-weight: 850;
             color: #111827;
             margin-bottom: 10px;
         }
 
-        .principle-line {
-            color: #334155;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .principle-label {
+        .allocation-role {
             color: var(--muted);
-            font-weight: 800;
+            font-size: 13px;
+            margin-bottom: 12px;
+            line-height: 1.45;
         }
 
+        .bar-bg {
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
-
-    PLOT_TEMPLATE = "plotly_white"
 
 
 # ============================================================
@@ -744,12 +887,12 @@ def get_market_data():
     hsi, hsi_prev, hsi_hist = latest_close("^HSI")
     hstech, hstech_prev, hstech_hist = latest_close("3067.HK")
     sh, sh_prev, sh_hist = latest_close("000001.SS")
+    spx, spx_prev, spx_hist = latest_close("^GSPC")
+    nasdaq, nasdaq_prev, nasdaq_hist = latest_close("^IXIC")
     us10y, us10y_prev, us10y_hist = latest_close("^TNX", divisor=10)
     dxy, dxy_prev, dxy_hist = latest_close("DX-Y.NYB")
     gold_usd, gold_usd_prev, gold_hist = latest_close("GC=F")
     usdcny, usdcny_prev, usdcny_hist = latest_close("CNY=X")
-    spx, spx_prev, spx_hist = latest_close("^GSPC")
-    nasdaq, nasdaq_prev, nasdaq_hist = latest_close("^IXIC")
 
     if not pd.isna(gold_usd) and not pd.isna(usdcny):
         gold_cny_gram = gold_usd * usdcny / 31.1035
@@ -793,21 +936,9 @@ def get_us_macro():
     fed, fed_prev, fed_hist = latest_fred("FEDFUNDS")
 
     return {
-        "ISM_PMI": {
-            "value": pmi if not pd.isna(pmi) else 48.5,
-            "prev": pmi_prev if not pd.isna(pmi_prev) else 48.8,
-            "hist": pmi_hist
-        },
-        "CPI同比": {
-            "value": cpi_yoy,
-            "prev": cpi_yoy_prev,
-            "hist": cpi_df
-        },
-        "联邦基金利率": {
-            "value": fed if not pd.isna(fed) else 3.75,
-            "prev": fed_prev if not pd.isna(fed_prev) else 3.75,
-            "hist": fed_hist
-        }
+        "ISM_PMI": {"value": pmi if not pd.isna(pmi) else 48.5, "prev": pmi_prev if not pd.isna(pmi_prev) else 48.8, "hist": pmi_hist},
+        "CPI同比": {"value": cpi_yoy, "prev": cpi_yoy_prev, "hist": cpi_df},
+        "联邦基金利率": {"value": fed if not pd.isna(fed) else 3.75, "prev": fed_prev if not pd.isna(fed_prev) else 3.75, "hist": fed_hist}
     }
 
 
@@ -1029,7 +1160,14 @@ def make_line_chart(df, title, y_col=None):
             height=380,
             margin=dict(l=20, r=20, t=55, b=20),
             hovermode="x unified",
-            template=PLOT_TEMPLATE
+            template=PLOT_TEMPLATE,
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color=FONT_COLOR),
+            legend=dict(
+                bgcolor="rgba(0,0,0,0)",
+                font=dict(color=FONT_COLOR)
+            )
         )
 
         st.plotly_chart(fig, use_container_width=True)
@@ -1122,8 +1260,8 @@ def render_cycle_page():
     st.markdown(
         f"""
         <div class="section-card">
-        当前系统判断为：<span class="{level_class(hk_season['level'])}">{hk_season['name']}</span>。
-        其含义是：{hk_season['desc']}。<br><br>
+        当前系统判断为：<span class="{level_class(hk_season['level'])}">{hk_season['name']}</span>。<br><br>
+        <b>周期含义：</b>{hk_season['desc']}。<br><br>
         <b>核心动作：</b>{hk_season['action']}。<br><br>
         <b>长周期底层约束：</b>{long_cycle['stage']}。这意味着黄金、优质股权、现金流资产和货币多元化仍然是战略底仓。
         </div>
@@ -1335,36 +1473,76 @@ def render_execution_page():
         ],
         "建议比例": [35, 15, 15, 10, 10, 15],
         "角色": [
-            "中国资产离岸弹性",
-            "本土信用周期受益",
-            "长周期货币对冲",
-            "美元流动性缓冲",
-            "全球科技超额收益",
-            "等待极端机会"
+            "中国资产离岸弹性，承担组合主要进攻任务",
+            "本土信用周期受益，捕捉政策与科技修复",
+            "长周期货币对冲，对冲债务周期与法币贬值",
+            "美元流动性缓冲，应对外部冲击和汇率波动",
+            "全球科技超额收益，保留创新资产敞口",
+            "等待极端机会，防止满仓被动"
         ]
     })
 
-    left, right = st.columns([1, 1])
+    left, right = st.columns([1.15, 0.85])
 
     with left:
-        fig = go.Figure(
-            data=[
-                go.Pie(
-                    labels=allocation["资产类别"],
-                    values=allocation["建议比例"],
-                    hole=0.42
-                )
-            ]
-        )
-        fig.update_layout(
-            height=430,
-            template=PLOT_TEMPLATE,
-            margin=dict(l=10, r=10, t=30, b=10)
-        )
-        st.plotly_chart(fig, use_container_width=True)
+        for _, row in allocation.iterrows():
+            pct = int(row["建议比例"])
+            st.markdown(
+                f"""
+                <div class="allocation-card">
+                    <div class="allocation-title">
+                        <span>{row["资产类别"]}</span>
+                        <span>{pct}%</span>
+                    </div>
+                    <div class="allocation-role">{row["角色"]}</div>
+                    <div class="bar-bg">
+                        <div class="bar-fill" style="width:{pct}%;"></div>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
     with right:
-        render_table(allocation)
+        st.markdown(
+            f"""
+            <div class="action-card">
+                <div class="action-title">今日系统判断</div>
+                <div class="action-text">
+                    当前港股双周期为 <span class="{level_class(hk_season['level'])}">{hk_season['name']}</span>。<br><br>
+                    <b>含义：</b>{hk_season['desc']}<br><br>
+                    <b>动作：</b>{hk_season['action']}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            f"""
+            <div class="action-card">
+                <div class="action-title">长周期约束</div>
+                <div class="action-text">
+                    当前债务大周期定位为 <span class="{level_class(long_cycle['level'])}">{long_cycle['stage']}</span>。<br><br>
+                    因此组合不应只依赖权益资产，需要保留黄金、现金和美元流动性缓冲。
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            """
+            <div class="action-card">
+                <div class="action-title">执行纪律</div>
+                <div class="action-text">
+                    不追涨，不满仓，不因为单日波动改变长期配置。<br><br>
+                    只有当关键指标触发阈值时，才进行 3%-10% 的仓位调整。
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     st.markdown("### 触发条件 → 行动清单")
 
@@ -1403,17 +1581,6 @@ def render_execution_page():
 
     render_table(decision_df)
 
-    st.markdown("### 月度复盘记录")
-
-    note = st.text_area(
-        "记录本月周期判断、执行动作、错误和下月修正：",
-        height=180,
-        placeholder="例如：2026年5月，我判断港股处于结构春，理由是中国信用修复但美债仍高位..."
-    )
-
-    if st.button("保存复盘记录"):
-        st.success("当前版本暂未接数据库。请先复制保存；后续可接 Supabase / SQLite。")
-
     st.markdown("### 本周检查清单")
 
     checklist = pd.DataFrame({
@@ -1434,6 +1601,17 @@ def render_execution_page():
     })
 
     render_table(checklist)
+
+    st.markdown("### 月度复盘记录")
+
+    note = st.text_area(
+        "记录本月周期判断、执行动作、错误和下月修正：",
+        height=180,
+        placeholder="例如：2026年5月，我判断港股处于结构春，理由是中国信用修复但美债仍高位..."
+    )
+
+    if st.button("保存复盘记录"):
+        st.success("当前版本暂未接数据库。请先复制保存；后续可接 Supabase / SQLite。")
 
 
 # ============================================================
